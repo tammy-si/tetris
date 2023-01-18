@@ -42,8 +42,11 @@ int main()
     texture.loadFromFile("Blocks.png");
     // keep track of what block we're on
     int block_num;
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(1);
     int field[ROWS][COLUMNS];
+
+    // counting frames, so that on certain frame we can do stuff
+    int frame {0};
 
     // hold the curr block
     Point curr_block[4];
@@ -105,8 +108,7 @@ int main()
             sprite.setScale(RESIZE, RESIZE);
             sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
             window.draw(sprite);
-        }            
-
+        }
     }
     return 0;
 }
