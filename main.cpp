@@ -2,6 +2,8 @@
 #include <iostream>
 #include <random>
 #include <time.h>
+#include <algorithm> 
+
 using namespace sf;
 using namespace std;
 // clang++ main.cpp -I/opt/homebrew/Cellar/sfml/2.5.1_2/include/ -L/opt/homebrew/Cellar/sfml/2.5.1_2/lib  -lsfml-graphics -lsfml-window -lsfml-system -std=c++20
@@ -106,11 +108,13 @@ int main()
 // check right bounds
 bool checkRightBounds(Point curr_block[]) {
     std::cout << &curr_block;
+    Point new_block[4];
+    copy(curr_block, curr_block + 4, new_block);
     cout << '\n';
     for (int i = 0; i < 4; i++) {
-        cout << curr_block[i].x  << " " << curr_block[i].y << endl;
-        curr_block[i].x += 1;
-        curr_block[i].y += 1;
+        cout << new_block[i].x  << " " << new_block[i].y << endl;
+        new_block[i].x += 1;
+        new_block[i].y += 1;
     }
     return true;
 }
