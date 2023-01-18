@@ -30,8 +30,8 @@ int tetromino[7][4][2] = {
 };
 
 // function prototypes
-bool checkRightBounds(Point curr_block[]);
-
+bool checkRightBounds(Point curr_block[], int x_change, int y_change);
+void moveBlock(Point curr_block[], int x_change, int y_change);
 
 int main()
 {
@@ -59,6 +59,14 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
+            // move right if user presses the right arrow
+            if (event.type == (sf::Event::KeyPressed)) {
+                if (event.key.code == sf::Keyboard::Right && checkRightBounds(curr_block, 1, 0)) {
+                    moveBlock(curr_block, 1, 0);
+                } else if (event.key.code == sf::Keyboard::Left && checkRightBounds(curr_block, -1, 0)) {
+                    moveBlock(curr_block, -1, 0);
+                }
+            }
         }
 
         window.display();
@@ -82,11 +90,9 @@ int main()
             }
             std::cout << block_num << std::endl;
             std::cout << &curr_block << std::endl;
-            checkRightBounds(curr_block);
+            checkRightBounds(curr_block, 1, 1);
             for (int i = 0; i < 4; i++) {
                 cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
-                curr_block[i].x += 1;
-                curr_block[i].y += 1;
             }
             made_block = true;
         }
@@ -106,16 +112,29 @@ int main()
 }
 
 // check right bounds
-bool checkRightBounds(Point curr_block[]) {
+bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
     std::cout << &curr_block;
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
-    cout << '\n';
     for (int i = 0; i < 4; i++) {
         cout << new_block[i].x  << " " << new_block[i].y << endl;
-        new_block[i].x += 1;
-        new_block[i].y += 1;
+        new_block[i].x += x_change;
+        new_block[i].y += y_change;
+        // for the left and right edges
+        if (new_block[i].x < 0 || new_block[i].x > 9) {
+            return false;
+        } else if (new_block[i].y < 0 || new_block[i].y > 9) {
+            return false;
+        }
     }
     return true;
+}
+
+// move the curr_block
+void moveBlock(Point curr_block[], int x_change, int y_change) {
+    for (int i = 0; i < 4; i++) {
+        curr_block[i].x += x_change;
+        curr_block[i].y += y_change;
+    }
 }
 
