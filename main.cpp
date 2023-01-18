@@ -3,6 +3,7 @@
 #include <random>
 #include <time.h>
 using namespace sf;
+using namespace std;
 // clang++ main.cpp -I/opt/homebrew/Cellar/sfml/2.5.1_2/include/ -L/opt/homebrew/Cellar/sfml/2.5.1_2/lib  -lsfml-graphics -lsfml-window -lsfml-system -std=c++20
 
 const unsigned int CELL_SIZE = 18;
@@ -15,8 +16,6 @@ struct Point {
     int y;
 };
 
-Point curr_block[4];
-
 // to make the pieces. Make the blocks based of the change from the main_point.
 int tetromino[7][4][2] = {
    {{0,-1}, {0,0}, {1,0}, {2,0}},    // J block
@@ -28,6 +27,10 @@ int tetromino[7][4][2] = {
    {{-1,0}, {0,0}, {1,0}, {1,-1}}    // L block
 };
 
+// function prototypes
+bool checkRightBounds(Point curr_block[]);
+
+
 int main()
 {
     srand(time(NULL));
@@ -37,8 +40,11 @@ int main()
     texture.loadFromFile("Blocks.png");
     // keep track of what block we're on
     int block_num;
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
     int field[ROWS][COLUMNS];
+
+    // hold the curr block
+    Point curr_block[4];
     // making the first starter_point
     Point starter_point;
     starter_point.x = 4;
@@ -73,6 +79,13 @@ int main()
                 std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
             }
             std::cout << block_num << std::endl;
+            std::cout << &curr_block << std::endl;
+            checkRightBounds(curr_block);
+            for (int i = 0; i < 4; i++) {
+                cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
+                curr_block[i].x += 1;
+                curr_block[i].y += 1;
+            }
             made_block = true;
         }
 
@@ -88,5 +101,17 @@ int main()
 
     }
     return 0;
+}
+
+// check right bounds
+bool checkRightBounds(Point curr_block[]) {
+    std::cout << &curr_block;
+    cout << '\n';
+    for (int i = 0; i < 4; i++) {
+        cout << curr_block[i].x  << " " << curr_block[i].y << endl;
+        curr_block[i].x += 1;
+        curr_block[i].y += 1;
+    }
+    return true;
 }
 
