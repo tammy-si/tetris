@@ -42,7 +42,7 @@ int main()
     texture.loadFromFile("Blocks.png");
     // keep track of what block we're on
     int block_num;
-    window.setFramerateLimit(1);
+    window.setFramerateLimit(60);
     int field[ROWS][COLUMNS];
 
     // counting frames, so that on certain frame we can do stuff
@@ -91,8 +91,6 @@ int main()
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
                 std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
             }
-            std::cout << block_num << std::endl;
-            std::cout << &curr_block << std::endl;
             checkRightBounds(curr_block, 1, 1);
             for (int i = 0; i < 4; i++) {
                 cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
@@ -108,6 +106,12 @@ int main()
             sprite.setScale(RESIZE, RESIZE);
             sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
             window.draw(sprite);
+        }
+        // count frame to make the block drop
+        frame++;
+        if (frame % 30 == 0) {
+            moveBlock(curr_block, 0, 1);
+            frame = 0;
         }
     }
     return 0;
@@ -125,7 +129,7 @@ bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
         // for the left and right edges
         if (new_block[i].x < 0 || new_block[i].x > 9) {
             return false;
-        } else if (new_block[i].y < 0 || new_block[i].y > 9) {
+        } else if (new_block[i].y < 0 || new_block[i].y > 19) {
             return false;
         }
     }
@@ -137,6 +141,7 @@ void moveBlock(Point curr_block[], int x_change, int y_change) {
     for (int i = 0; i < 4; i++) {
         curr_block[i].x += x_change;
         curr_block[i].y += y_change;
+        cout << curr_block[i].x << ' ' << curr_block[i].y << endl;;
     }
 }
 
