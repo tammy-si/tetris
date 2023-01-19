@@ -30,7 +30,7 @@ int tetromino[7][4][2] = {
 };
 
 // function prototypes
-bool checkRightBounds(Point curr_block[], int x_change, int y_change);
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided);
 void moveBlock(Point curr_block[], int x_change, int y_change);
 
 int main()
@@ -42,7 +42,7 @@ int main()
     texture.loadFromFile("Blocks.png");
     // keep track of what block we're on
     int block_num;
-    window.setFramerateLimit(1);
+    window.setFramerateLimit(60);
     int field[ROWS][COLUMNS];
 
     // counting frames, so that on certain frame we can do stuff
@@ -54,7 +54,11 @@ int main()
     Point starter_point;
     starter_point.x = 4;
     starter_point.y = 1;
+
+    // made block is to keep track of whether we need to make a new block. 
+    // has_collided keeps track of whether or not the current block has collided with the bottom or field
     bool made_block = false;
+    bool has_collided = false;
     while (window.isOpen())
     {
         Event event;
@@ -64,9 +68,9 @@ int main()
                 window.close();
             // move right if user presses the right arrow
             if (event.type == (sf::Event::KeyPressed)) {
-                if (event.key.code == sf::Keyboard::Right && checkRightBounds(curr_block, 1, 0)) {
+                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided)) {
                     moveBlock(curr_block, 1, 0);
-                } else if (event.key.code == sf::Keyboard::Left && checkRightBounds(curr_block, -1, 0)) {
+                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
                     moveBlock(curr_block, -1, 0);
                 }
             }
@@ -91,13 +95,11 @@ int main()
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
                 std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
             }
-            std::cout << block_num << std::endl;
-            std::cout << &curr_block << std::endl;
-            checkRightBounds(curr_block, 1, 1);
             for (int i = 0; i < 4; i++) {
                 cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
             }
             made_block = true;
+            has_collided = false;
         }
 
         // draw out curr block
@@ -109,12 +111,25 @@ int main()
             sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
             window.draw(sprite);
         }
+        // count frame to make the block drop
+        frame++;
+        // to drop the block make sure that it hasn't collided with anything yet 
+        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided) & !has_collided) {
+            moveBlock(curr_block, 0, 1);
+            frame = 0;
+        }
+
+        // the block has either collided with the bottom or another block
+        if (has_collided) {
+            made_block = false;
+        }
+
     }
     return 0;
 }
 
 // check right bounds
-bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided) {
     std::cout << &curr_block;
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
@@ -123,9 +138,10 @@ bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
         new_block[i].x += x_change;
         new_block[i].y += y_change;
         // for the left and right edges
-        if (new_block[i].x < 0 || new_block[i].x > 9) {
+        if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y < 0 || new_block[i].y > 9) {
+        } else if (new_block[i].y > 19) {
+            has_collided = true;
             return false;
         }
     }
@@ -137,6 +153,6 @@ void moveBlock(Point curr_block[], int x_change, int y_change) {
     for (int i = 0; i < 4; i++) {
         curr_block[i].x += x_change;
         curr_block[i].y += y_change;
+        cout << curr_block[i].x << ' ' << curr_block[i].y << endl;;
     }
 }
-
