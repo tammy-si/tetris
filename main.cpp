@@ -30,7 +30,7 @@ int tetromino[7][4][2] = {
 };
 
 // function prototypes
-bool checkRightBounds(Point curr_block[], int x_change, int y_change);
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided);
 void moveBlock(Point curr_block[], int x_change, int y_change);
 
 int main()
@@ -55,6 +55,7 @@ int main()
     starter_point.x = 4;
     starter_point.y = 1;
     bool made_block = false;
+    bool has_collided = false;
     while (window.isOpen())
     {
         Event event;
@@ -64,9 +65,9 @@ int main()
                 window.close();
             // move right if user presses the right arrow
             if (event.type == (sf::Event::KeyPressed)) {
-                if (event.key.code == sf::Keyboard::Right && checkRightBounds(curr_block, 1, 0)) {
+                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided)) {
                     moveBlock(curr_block, 1, 0);
-                } else if (event.key.code == sf::Keyboard::Left && checkRightBounds(curr_block, -1, 0)) {
+                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
                     moveBlock(curr_block, -1, 0);
                 }
             }
@@ -91,7 +92,6 @@ int main()
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
                 std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
             }
-            checkRightBounds(curr_block, 1, 1);
             for (int i = 0; i < 4; i++) {
                 cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
             }
@@ -109,7 +109,7 @@ int main()
         }
         // count frame to make the block drop
         frame++;
-        if (frame % 30 == 0) {
+        if (frame % 30 == 0 && !has_collided && checkBounds(curr_block, 0, 1, has_collided)) {
             moveBlock(curr_block, 0, 1);
             frame = 0;
         }
@@ -118,7 +118,7 @@ int main()
 }
 
 // check right bounds
-bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided) {
     std::cout << &curr_block;
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
@@ -127,9 +127,10 @@ bool checkRightBounds(Point curr_block[], int x_change, int y_change) {
         new_block[i].x += x_change;
         new_block[i].y += y_change;
         // for the left and right edges
-        if (new_block[i].x < 0 || new_block[i].x > 9) {
+        if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y < 0 || new_block[i].y > 19) {
+        } else if (new_block[i].y > 19) {
+            has_collided = true;
             return false;
         }
     }
@@ -144,4 +145,3 @@ void moveBlock(Point curr_block[], int x_change, int y_change) {
         cout << curr_block[i].x << ' ' << curr_block[i].y << endl;;
     }
 }
-
