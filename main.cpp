@@ -96,6 +96,7 @@ int main()
                 cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
             }
             made_block = true;
+            has_collided = false;
         }
 
         // draw out curr block
@@ -109,10 +110,17 @@ int main()
         }
         // count frame to make the block drop
         frame++;
-        if (frame % 30 == 0 && !has_collided && checkBounds(curr_block, 0, 1, has_collided)) {
+        // to drop the block make sure that it hasn't collided with anything yet 
+        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided) & !has_collided) {
             moveBlock(curr_block, 0, 1);
             frame = 0;
         }
+
+        // the block has either collided with the bottom or another block
+        if (has_collided) {
+            made_block = false;
+        }
+
     }
     return 0;
 }
