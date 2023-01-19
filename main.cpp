@@ -54,6 +54,9 @@ int main()
     Point starter_point;
     starter_point.x = 4;
     starter_point.y = 1;
+
+    // made block is to keep track of whether we need to make a new block. 
+    // has_collided keeps track of whether or not the current block has collided with the bottom or field
     bool made_block = false;
     bool has_collided = false;
     while (window.isOpen())
