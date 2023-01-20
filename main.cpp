@@ -148,6 +148,21 @@ int main()
                 cout << endl;
             }
         }
+
+        // draw out the field of blocks that have been placed
+        for (int row = 0; row < ROWS; row++) {
+            for (int column = 0; column < COLUMNS; column++) {
+                if (field[row][column] == 9) {
+                    continue;
+                }
+                Sprite block;
+                block.setTexture(texture);
+                block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
+                block.setScale(RESIZE, RESIZE);
+                block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
+                window.draw(block);          
+            }
+        }
     }
     return 0;
 }
