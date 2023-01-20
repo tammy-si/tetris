@@ -87,6 +87,15 @@ int main()
                     std::cout << "Rotate";
                     rotateBlock(curr_block);
                 }
+                // want to go down faster
+                if (event.key.code == sf::Keyboard::Down) {
+                    window.setFramerateLimit(800);
+                }
+            }
+            if (event.type == Event::KeyReleased) {
+                if (event.key.code == sf::Keyboard::Down) {
+                    window.setFramerateLimit(60);
+                }
             }
         }
 
@@ -182,7 +191,10 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
             return false;
         // hits the bottom fo the field or another block in the field
         } else if (new_block[i].y > 19 || field[new_block[i].y][new_block[i].x] != 9) {
-            has_collided = true;
+            // make sure it's due to natural drop and not the moving side to side
+            if (x_change == 0) {
+                has_collided = true;
+            }
             return false;
         }
     }
