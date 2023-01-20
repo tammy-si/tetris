@@ -30,10 +30,10 @@ int tetromino[7][4][2] = {
 };
 
 // function prototypes
-bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided);
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided, int field[][COLUMNS]);
 void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
-bool checkCanRotate(Point curr_block[]);
+bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
 
 int main()
 {
@@ -76,14 +76,14 @@ int main()
                 window.close();
             if (event.type == (sf::Event::KeyPressed)) {
                 // move right if user presses the right arrow
-                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided)) {
+                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided, field)) {
                     moveBlock(curr_block, 1, 0);
                 // move right if the user presses the left arrow
-                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
+                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided, field)) {
                     moveBlock(curr_block, -1, 0);
                 }
                 // rotating the block
-                if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block)) {
+                if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block, field)) {
                     std::cout << "Rotate";
                     rotateBlock(curr_block);
                 }
@@ -128,7 +128,7 @@ int main()
         // count frame to make the block drop
         frame++;
         // to drop the block make sure that it hasn't collided with anything yet 
-        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided) & !has_collided) {
+        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
             moveBlock(curr_block, 0, 1);
             frame = 0;
         }
@@ -152,6 +152,7 @@ int main()
         // draw out the field of blocks that have been placed
         for (int row = 0; row < ROWS; row++) {
             for (int column = 0; column < COLUMNS; column++) {
+                // 9 in the field is an empty spot, so we skip
                 if (field[row][column] == 9) {
                     continue;
                 }
@@ -168,7 +169,7 @@ int main()
 }
 
 // check right bounds
-bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided) {
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided, int field[][COLUMNS]) {
     std::cout << &curr_block;
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
@@ -179,7 +180,8 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
         // for the left and right edges
         if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y > 19) {
+        // hits the bottom fo the field or another block in the field
+        } else if (new_block[i].y > 19 || field[new_block[i].y][new_block[i].x] != 9) {
             has_collided = true;
             return false;
         }
@@ -188,7 +190,7 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
 }
 
 // check if can rotate without hitting the field
-bool checkCanRotate(Point curr_block[]) {
+bool checkCanRotate(Point curr_block[], int field[][COLUMNS]) {
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
     Point point_of_rot = new_block[1];
@@ -207,7 +209,7 @@ bool checkCanRotate(Point curr_block[]) {
         // for the left and right edges
         if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y > 19) {
+        } else if (new_block[i].y > 19 || field[new_block[i].y][new_block[i].x] != 9) {
             return false;
         }
     }
