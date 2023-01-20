@@ -34,6 +34,7 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
 void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
 bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
+void updateField(int field[][COLUMNS]);
 
 int main()
 {
@@ -149,13 +150,7 @@ int main()
             for (int i = 0; i < 4; i++) {
                     field[curr_block[i].y][curr_block[i].x] = block_num;
             }
-            cout << endl;
-            for (int row = 0; row < 20; row++) {
-                for (int column = 0; column < 10; column++) {
-                    cout << field[row][column] << " ";
-                }
-                cout << endl;
-            }
+            updateField(field);
         }
 
         // draw out the field of blocks that have been placed
@@ -251,5 +246,42 @@ void rotateBlock(Point curr_block[]) {
         // add point fo rotation back to 
         curr_block[i].x += point_of_rot.x;
         curr_block[i].y += point_of_rot.y;
+    }
+}
+
+// update field
+// delete full rows and move the blocks down
+void updateField(int field[][COLUMNS]) {
+    std::cout << "Updating field";
+    for (int row = 0; row < 20; row++) {
+        for (int column = 0; column < 10; column++) {
+           cout << field[row][column] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+    bool to_be_cleared = false;
+    for (int row = 0; row < 20; row++) {
+        to_be_cleared = true;
+        for (int column = 0; column < 10; column++) {
+            // if there an empty area, you can skip this row
+            if (field[row][column] == 9) {
+                to_be_cleared = false;
+                break;
+            }
+        }
+        if (to_be_cleared) {
+            // if there isn't a break that means the row is full. That means clear it
+            for (int b = 0; b < COLUMNS; b++) {
+                field[row][b] = 9;
+            }
+        cout << endl;
+        }
+    }
+    for (int row = 0; row < 20; row++) {
+        for (int column = 0; column < 10; column++) {
+           cout << field[row][column] << " ";
+        }
+        cout << endl;
     }
 }
