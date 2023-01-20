@@ -45,7 +45,13 @@ int main()
     // keep track of what block we're on
     int block_num;
     window.setFramerateLimit(60);
-    int field[ROWS][COLUMNS] {-1};
+    int field[ROWS][COLUMNS];
+    // set all the values of the field to 9. 9 means that the spot is empty.
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLUMNS; c++) {
+            field[r][c] = 9;
+        }
+    }
 
     // counting frames, so that on certain frame we can do stuff
     int frame {0};
@@ -68,13 +74,15 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            // move right if user presses the right arrow
             if (event.type == (sf::Event::KeyPressed)) {
+                // move right if user presses the right arrow
                 if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided)) {
                     moveBlock(curr_block, 1, 0);
+                // move right if the user presses the left arrow
                 } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
                     moveBlock(curr_block, -1, 0);
                 }
+                // rotating the block
                 if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block)) {
                     std::cout << "Rotate";
                     rotateBlock(curr_block);
@@ -128,8 +136,18 @@ int main()
         // the block has either collided with the bottom or another block
         if (has_collided) {
             made_block = false;
+            // add the block to the field
+            for (int i = 0; i < 4; i++) {
+                    field[curr_block[i].y][curr_block[i].x] = block_num;
+            }
+            cout << endl;
+            for (int row = 0; row < 20; row++) {
+                for (int column = 0; column < 10; column++) {
+                    cout << field[row][column] << " ";
+                }
+                cout << endl;
+            }
         }
-
     }
     return 0;
 }
