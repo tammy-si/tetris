@@ -32,6 +32,8 @@ int tetromino[7][4][2] = {
 // function prototypes
 bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided);
 void moveBlock(Point curr_block[], int x_change, int y_change);
+void rotateBlock(Point curr_block[]);
+bool checkCanRotate(Point curr_block[]);
 
 int main()
 {
@@ -43,7 +45,7 @@ int main()
     // keep track of what block we're on
     int block_num;
     window.setFramerateLimit(60);
-    int field[ROWS][COLUMNS];
+    int field[ROWS][COLUMNS] {-1};
 
     // counting frames, so that on certain frame we can do stuff
     int frame {0};
@@ -72,6 +74,10 @@ int main()
                     moveBlock(curr_block, 1, 0);
                 } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
                     moveBlock(curr_block, -1, 0);
+                }
+                if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block)) {
+                    std::cout << "Rotate";
+                    rotateBlock(curr_block);
                 }
             }
         }
@@ -148,11 +154,55 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
     return true;
 }
 
+// check if can rotate without hitting the field
+bool checkCanRotate(Point curr_block[]) {
+    Point new_block[4];
+    copy(curr_block, curr_block + 4, new_block);
+    Point point_of_rot = new_block[1];
+    for (int i = 0; i < 4; i++) {
+        // rotate around the main point of the block, which should be the point at new_block[1]
+        // subtract 
+        new_block[i].x = new_block[i].x - point_of_rot.x;
+        new_block[i].y = new_block[i].y - point_of_rot.y;
+        // rotate as if around the origin
+        int temp = new_block[i].x;
+        new_block[i].x = -new_block[i].y;
+        new_block[i].y = temp;
+        // add point fo rotation back to 
+        new_block[i].x += point_of_rot.x;
+        new_block[i].y += point_of_rot.y;
+        // for the left and right edges
+        if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
+            return false;
+        } else if (new_block[i].y > 19) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // move the curr_block
 void moveBlock(Point curr_block[], int x_change, int y_change) {
     for (int i = 0; i < 4; i++) {
         curr_block[i].x += x_change;
         curr_block[i].y += y_change;
-        cout << curr_block[i].x << ' ' << curr_block[i].y << endl;;
+    }
+}
+
+// rotate block
+void rotateBlock(Point curr_block[]) {
+    Point point_of_rot = curr_block[1];
+    for (int i = 0; i < 4; i++) {
+        // rotate around the main point of the block, which should be the point at new_block[1]
+        // subtract 
+        curr_block[i].x = curr_block[i].x - point_of_rot.x;
+        curr_block[i].y = curr_block[i].y - point_of_rot.y;
+        // rotate as if around the origin
+        int temp = curr_block[i].x;
+        curr_block[i].x = -curr_block[i].y;
+        curr_block[i].y = temp;
+        // add point fo rotation back to 
+        curr_block[i].x += point_of_rot.x;
+        curr_block[i].y += point_of_rot.y;
     }
 }
