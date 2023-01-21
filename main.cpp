@@ -86,7 +86,6 @@ int main()
                 }
                 // rotating the block
                 if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block, field)) {
-                    std::cout << "Rotate";
                     rotateBlock(curr_block);
                 }
                 // want to go down faster
@@ -127,10 +126,6 @@ int main()
             for (int i = 0; i < 4; i++) {
                 curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
-                std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
-            }
-            for (int i = 0; i < 4; i++) {
-                cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
             }
             made_block = true;
             has_collided = false;
@@ -189,11 +184,9 @@ int main()
 
 // check right bounds
 bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided, int field[][COLUMNS]) {
-    std::cout << &curr_block;
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
     for (int i = 0; i < 4; i++) {
-        cout << new_block[i].x  << " " << new_block[i].y << endl;
         new_block[i].x += x_change;
         new_block[i].y += y_change;
         // for the left and right edges
@@ -267,14 +260,10 @@ void rotateBlock(Point curr_block[]) {
 // update field
 // delete full rows and move the blocks down
 void updateField(int field[][COLUMNS]) {
-    std::cout << "Updating field";
-    for (int row = 0; row < 20; row++) {
-        for (int column = 0; column < 10; column++) {
-           cout << field[row][column] << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
+
+    // an array to keep track of whether the row has been cleared. order is top down the same as the field
+    // 1 is that the row is cleared (1 is true). 0 is that the row is not cleared
+    int cleared[20];
     bool to_be_cleared = false;
     for (int row = 0; row < 20; row++) {
         to_be_cleared = true;
@@ -282,6 +271,7 @@ void updateField(int field[][COLUMNS]) {
             // if there an empty area, you can skip this row
             if (field[row][column] == 9) {
                 to_be_cleared = false;
+                cleared[row] = 0;
                 break;
             }
         }
@@ -289,6 +279,32 @@ void updateField(int field[][COLUMNS]) {
             // if there isn't a break that means the row is full. That means clear it
             for (int b = 0; b < COLUMNS; b++) {
                 field[row][b] = 9;
+            }
+            cleared[row] = 1;
+        }
+    }
+
+    // go bottom to top and swap an empty rows with the first row with blocks. 
+    for (int i = 19; i >= 0; i--) {
+        // found a empty row
+        if (cleared[i] == 1) {
+            // now look for the next non-empty row
+            int curr = i - 1;
+            bool swapped = false;
+            while (curr >= 0 && !swapped){
+                if (cleared[curr] == 0) {
+                    // swap the empty row with the closest non-empty row
+                    for (int col = 0; col < 10; col++) {
+                        int temp = field[i][col];
+                        field[i][col] = field[curr][col];
+                        field[curr][col] = temp;
+                    }
+                    // change the swaped status and the status of the rows in cleared
+                    cleared[i] = 0;
+                    cleared[curr] = 1;
+                    swapped = true;
+                }
+                curr--;
             }
         }
     }
