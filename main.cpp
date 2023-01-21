@@ -20,20 +20,21 @@ struct Point {
 
 // to make the pieces. Make the blocks based of the change from the main_point.
 int tetromino[7][4][2] = {
-   {{0,-1}, {0,0}, {1,0}, {2,0}},    // J block
+   {{-1, -1}, {0,0}, {-1,0}, {1,0}},    // J block
    {{-1,0}, {0,0}, {0,-1}, {1,0}},   // T block
    {{-1,-1}, {0,0}, {0,-1}, {1,0}},   // Z block
    {{-1,0}, {0,0}, {0,-1}, {1,-1}},   // S block
-   {{0,-1}, {0,0}, {1,-1}, {1,0}},    // O block
-   {{-1,-1}, {0,-1}, {1,-1}, {2,-1}},   // I block
+   {{-1,-1}, {0,0}, {-1,0}, {0,-1}},    // O block
+   {{-2,-1}, {0,-1}, {-1,-1}, {1,-1}},   // I block
    {{-1,0}, {0,0}, {1,0}, {1,-1}}    // L block
 };
 
 // function prototypes
-bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided);
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided, int field[][COLUMNS]);
 void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
-bool checkCanRotate(Point curr_block[]);
+bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
+void updateField(int field[][COLUMNS]);
 
 int main()
 {
@@ -45,7 +46,13 @@ int main()
     // keep track of what block we're on
     int block_num;
     window.setFramerateLimit(60);
-    int field[ROWS][COLUMNS] {-1};
+    int field[ROWS][COLUMNS];
+    // set all the values of the field to 9. 9 means that the spot is empty.
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLUMNS; c++) {
+            field[r][c] = 9;
+        }
+    }
 
     // counting frames, so that on certain frame we can do stuff
     int frame {0};
@@ -61,6 +68,7 @@ int main()
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
     bool made_block = false;
     bool has_collided = false;
+    bool pressed_space = false;
     while (window.isOpen())
     {
         Event event;
@@ -68,16 +76,35 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            // move right if user presses the right arrow
             if (event.type == (sf::Event::KeyPressed)) {
-                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided)) {
+                // move right if user presses the right arrow
+                if (event.key.code == sf::Keyboard::Right && checkBounds(curr_block, 1, 0, has_collided, field)) {
                     moveBlock(curr_block, 1, 0);
-                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided)) {
+                // move right if the user presses the left arrow
+                } else if (event.key.code == sf::Keyboard::Left && checkBounds(curr_block, -1, 0, has_collided, field)) {
                     moveBlock(curr_block, -1, 0);
                 }
-                if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block)) {
-                    std::cout << "Rotate";
+                // rotating the block
+                if (event.key.code == sf::Keyboard::Up && checkCanRotate(curr_block, field)) {
                     rotateBlock(curr_block);
+                }
+                // want to go down faster
+                if (event.key.code == sf::Keyboard::Down) {
+                    window.setFramerateLimit(800);
+                }
+                // down for instant
+                if (event.key.code == sf::Keyboard::Space) {
+                    pressed_space = true;
+                    window.setFramerateLimit(800);
+                }
+            }
+            if (event.type == Event::KeyReleased) {
+                if (event.key.code == sf::Keyboard::Down) {
+                    window.setFramerateLimit(60);
+                }
+                if (event.key.code == sf::Keyboard::Space) {
+                    pressed_space = false;
+                    window.setFramerateLimit(60);
                 }
             }
         }
@@ -99,10 +126,6 @@ int main()
             for (int i = 0; i < 4; i++) {
                 curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
-                std::cout << curr_block[i].x << " " << curr_block[i].y << std::endl;
-            }
-            for (int i = 0; i < 4; i++) {
-                cout << '\n' << curr_block[i].x  << " " << curr_block[i].y << endl;
             }
             made_block = true;
             has_collided = false;
@@ -118,9 +141,13 @@ int main()
             window.draw(sprite);
         }
         // count frame to make the block drop
-        frame++;
+        if (pressed_space) {
+            frame += 30;
+        } else {
+            frame++;
+        }
         // to drop the block make sure that it hasn't collided with anything yet 
-        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided) & !has_collided) {
+        if (frame >= 30 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
             moveBlock(curr_block, 0, 1);
             frame = 0;
         }
@@ -128,26 +155,49 @@ int main()
         // the block has either collided with the bottom or another block
         if (has_collided) {
             made_block = false;
+            // add the block to the field
+            for (int i = 0; i < 4; i++) {
+                    field[curr_block[i].y][curr_block[i].x] = block_num;
+            }
+            updateField(field);
+            pressed_space = false;
         }
 
+        // draw out the field of blocks that have been placed
+        for (int row = 0; row < ROWS; row++) {
+            for (int column = 0; column < COLUMNS; column++) {
+                // 9 in the field is an empty spot, so we skip
+                if (field[row][column] == 9) {
+                    continue;
+                }
+                Sprite block;
+                block.setTexture(texture);
+                block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
+                block.setScale(RESIZE, RESIZE);
+                block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
+                window.draw(block);          
+            }
+        }
     }
     return 0;
 }
 
 // check right bounds
-bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided) {
-    std::cout << &curr_block;
+bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_collided, int field[][COLUMNS]) {
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
     for (int i = 0; i < 4; i++) {
-        cout << new_block[i].x  << " " << new_block[i].y << endl;
         new_block[i].x += x_change;
         new_block[i].y += y_change;
         // for the left and right edges
         if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y > 19) {
-            has_collided = true;
+        // hits the bottom fo the field or another block in the field
+        } else if (new_block[i].y > 19 || field[new_block[i].y][new_block[i].x] != 9) {
+            // make sure it's due to natural drop and not the moving side to side
+            if (x_change == 0) {
+                has_collided = true;
+            }
             return false;
         }
     }
@@ -155,7 +205,7 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
 }
 
 // check if can rotate without hitting the field
-bool checkCanRotate(Point curr_block[]) {
+bool checkCanRotate(Point curr_block[], int field[][COLUMNS]) {
     Point new_block[4];
     copy(curr_block, curr_block + 4, new_block);
     Point point_of_rot = new_block[1];
@@ -174,7 +224,7 @@ bool checkCanRotate(Point curr_block[]) {
         // for the left and right edges
         if (new_block[i].x < 0 || new_block[i].x > 9 || (new_block[i].y < 0)) {
             return false;
-        } else if (new_block[i].y > 19) {
+        } else if (new_block[i].y > 19 || field[new_block[i].y][new_block[i].x] != 9) {
             return false;
         }
     }
@@ -204,5 +254,58 @@ void rotateBlock(Point curr_block[]) {
         // add point fo rotation back to 
         curr_block[i].x += point_of_rot.x;
         curr_block[i].y += point_of_rot.y;
+    }
+}
+
+// update field
+// delete full rows and move the blocks down
+void updateField(int field[][COLUMNS]) {
+
+    // an array to keep track of whether the row has been cleared. order is top down the same as the field
+    // 1 is that the row is cleared (1 is true). 0 is that the row is not cleared
+    int cleared[20];
+    bool to_be_cleared = false;
+    for (int row = 0; row < 20; row++) {
+        to_be_cleared = true;
+        for (int column = 0; column < 10; column++) {
+            // if there an empty area, you can skip this row
+            if (field[row][column] == 9) {
+                to_be_cleared = false;
+                cleared[row] = 0;
+                break;
+            }
+        }
+        if (to_be_cleared) {
+            // if there isn't a break that means the row is full. That means clear it
+            for (int b = 0; b < COLUMNS; b++) {
+                field[row][b] = 9;
+            }
+            cleared[row] = 1;
+        }
+    }
+
+    // go bottom to top and swap an empty rows with the first row with blocks. 
+    for (int i = 19; i >= 0; i--) {
+        // found a empty row
+        if (cleared[i] == 1) {
+            // now look for the next non-empty row
+            int curr = i - 1;
+            bool swapped = false;
+            while (curr >= 0 && !swapped){
+                if (cleared[curr] == 0) {
+                    // swap the empty row with the closest non-empty row
+                    for (int col = 0; col < 10; col++) {
+                        int temp = field[i][col];
+                        field[i][col] = field[curr][col];
+                        field[curr][col] = temp;
+                    }
+                    // change the swaped status and the status of the rows in cleared
+                    cleared[i] = 0;
+                    cleared[curr] = 1;
+                    swapped = true;
+                }
+                curr--;
+            }
+        }
     }
 }
