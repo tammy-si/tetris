@@ -68,6 +68,7 @@ int main()
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
     bool made_block = false;
     bool has_collided = false;
+    bool pressed_space = false;
     while (window.isOpen())
     {
         Event event;
@@ -92,9 +93,18 @@ int main()
                 if (event.key.code == sf::Keyboard::Down) {
                     window.setFramerateLimit(800);
                 }
+                // down for instant
+                if (event.key.code == sf::Keyboard::Space) {
+                    pressed_space = true;
+                    window.setFramerateLimit(800);
+                }
             }
             if (event.type == Event::KeyReleased) {
                 if (event.key.code == sf::Keyboard::Down) {
+                    window.setFramerateLimit(60);
+                }
+                if (event.key.code == sf::Keyboard::Space) {
+                    pressed_space = false;
                     window.setFramerateLimit(60);
                 }
             }
@@ -136,9 +146,13 @@ int main()
             window.draw(sprite);
         }
         // count frame to make the block drop
-        frame++;
+        if (pressed_space) {
+            frame += 30;
+        } else {
+            frame++;
+        }
         // to drop the block make sure that it hasn't collided with anything yet 
-        if (frame % 30 == 0 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
+        if (frame >= 30 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
             moveBlock(curr_block, 0, 1);
             frame = 0;
         }
@@ -151,6 +165,7 @@ int main()
                     field[curr_block[i].y][curr_block[i].x] = block_num;
             }
             updateField(field);
+            pressed_space = false;
         }
 
         // draw out the field of blocks that have been placed
@@ -275,13 +290,6 @@ void updateField(int field[][COLUMNS]) {
             for (int b = 0; b < COLUMNS; b++) {
                 field[row][b] = 9;
             }
-        cout << endl;
         }
-    }
-    for (int row = 0; row < 20; row++) {
-        for (int column = 0; column < 10; column++) {
-           cout << field[row][column] << " ";
-        }
-        cout << endl;
     }
 }
