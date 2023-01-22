@@ -122,7 +122,11 @@ int main()
         }
         // populate curr_block based on random block chosen
         if (!made_block) {
-            block_num = rand() % 7;
+            // kept track of the prev block we had, so that we don't have two of the same blocks in a row
+            int prev = block_num;
+            while (block_num == prev) {
+                block_num = rand() % 7;
+            }
             for (int i = 0; i < 4; i++) {
                 curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
                 curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
