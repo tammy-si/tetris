@@ -35,6 +35,8 @@ void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
 bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
 void updateField(int field[][COLUMNS]);
+bool checkGameover(int field[][COLUMNS]);
+void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture);
 
 int main()
 {
@@ -69,6 +71,7 @@ int main()
     bool made_block = false;
     bool has_collided = false;
     bool pressed_space = false;
+    bool stop_game = false;
     while (window.isOpen())
     {
         Event event;
@@ -108,79 +111,71 @@ int main()
                 }
             }
         }
+        if (!stop_game) {
+            window.display();
 
-        window.display();
-
-        // draw the grid out
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 10; j++) {
-                sf::RectangleShape block(sf::Vector2f(CELL_SIZE * RESIZE - 1, CELL_SIZE * RESIZE - 1));
-                block.setFillColor(Color::White);
-                block.setPosition(j * 36, i * 36);
-                window.draw(block);
-            }
-        }
-        // populate curr_block based on random block chosen
-        if (!made_block) {
-            // kept track of the prev block we had, so that we don't have two of the same blocks in a row
-            int prev = block_num;
-            while (block_num == prev) {
-                block_num = rand() % 7;
-            }
-            for (int i = 0; i < 4; i++) {
-                curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
-                curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
-            }
-            made_block = true;
-            has_collided = false;
-        }
-
-        // draw out curr block
-        for (int i = 0; i < 4; i++) {
-            Sprite sprite;
-            sprite.setTexture(texture);
-            sprite.setTextureRect(sf::IntRect(18 * block_num, 0, 18, 18));
-            sprite.setScale(RESIZE, RESIZE);
-            sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
-            window.draw(sprite);
-        }
-        // count frame to make the block drop
-        if (pressed_space) {
-            frame += 30;
-        } else {
-            frame++;
-        }
-        // to drop the block make sure that it hasn't collided with anything yet 
-        if (frame >= 30 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
-            moveBlock(curr_block, 0, 1);
-            frame = 0;
-        }
-
-        // the block has either collided with the bottom or another block
-        if (has_collided) {
-            made_block = false;
-            // add the block to the field
-            for (int i = 0; i < 4; i++) {
-                    field[curr_block[i].y][curr_block[i].x] = block_num;
-            }
-            updateField(field);
-            pressed_space = false;
-        }
-
-        // draw out the field of blocks that have been placed
-        for (int row = 0; row < ROWS; row++) {
-            for (int column = 0; column < COLUMNS; column++) {
-                // 9 in the field is an empty spot, so we skip
-                if (field[row][column] == 9) {
-                    continue;
+            // draw the grid out
+            for (int i = 0; i < 20; i++) {
+                for (int j = 0; j < 10; j++) {
+                    sf::RectangleShape block(sf::Vector2f(CELL_SIZE * RESIZE - 1, CELL_SIZE * RESIZE - 1));
+                    block.setFillColor(Color::White);
+                    block.setPosition(j * 36, i * 36);
+                    window.draw(block);
                 }
-                Sprite block;
-                block.setTexture(texture);
-                block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
-                block.setScale(RESIZE, RESIZE);
-                block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
-                window.draw(block);          
             }
+            // populate curr_block based on random block chosen
+            if (!made_block) {
+                // kept track of the prev block we had, so that we don't have two of the same blocks in a row
+                int prev = block_num;
+                while (block_num == prev) {
+                    block_num = rand() % 7;
+                }
+                for (int i = 0; i < 4; i++) {
+                    curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
+                    curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
+                }
+                made_block = true;
+                has_collided = false;
+            }
+
+            // draw out curr block
+            for (int i = 0; i < 4; i++) {
+                Sprite sprite;
+                sprite.setTexture(texture);
+                sprite.setTextureRect(sf::IntRect(18 * block_num, 0, 18, 18));
+                sprite.setScale(RESIZE, RESIZE);
+                sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
+                window.draw(sprite);
+            }
+            // count frame to make the block drop
+            if (pressed_space) {
+                frame += 30;
+            } else {
+                frame++;
+            }
+            // to drop the block make sure that it hasn't collided with anything yet 
+            if (frame >= 30 && checkBounds(curr_block, 0, 1, has_collided, field) & !has_collided) {
+                moveBlock(curr_block, 0, 1);
+                frame = 0;
+            }
+
+            // the block has either collided with the bottom or another block
+            if (has_collided) {
+                made_block = false;
+                // add the block to the field
+                for (int i = 0; i < 4; i++) {
+                        field[curr_block[i].y][curr_block[i].x] = block_num;
+                }
+                updateField(field);
+                pressed_space = false;
+            }
+            drawField(field, window, texture);
+        }
+        // check to see if it's game over by checking if the field has something in its top row
+        if (checkGameover(field)) {
+            stop_game = true;
+            drawField(field, window, texture);
+            window.display();
         }
     }
     return 0;
@@ -310,6 +305,35 @@ void updateField(int field[][COLUMNS]) {
                 }
                 curr--;
             }
+        }
+    }
+}
+
+// check for gameover
+bool checkGameover(int field[][COLUMNS]) {
+    for (int i = 0; i < COLUMNS; i++) {
+        // there's something in the top row, so not 9 (which means empty)
+        if (field[0][i] != 9) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture) {
+    // draw out the field of blocks that have been placed
+    for (int row = 0; row < ROWS; row++) {
+        for (int column = 0; column < COLUMNS; column++) {
+            // 9 in the field is an empty spot, so we skip
+            if (field[row][column] == 9) {
+                continue;
+            }
+            Sprite block;
+            block.setTexture(texture);
+            block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
+            block.setScale(RESIZE, RESIZE);
+            block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
+            window.draw(block);          
         }
     }
 }
