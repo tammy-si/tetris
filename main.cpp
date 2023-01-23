@@ -73,6 +73,9 @@ int main()
 
     unsigned long score = 0;
 
+    // the block being held. Starts at 9, which represents no block cause there isn't 9 tetromino
+    int held_block_num = 9;
+
     // made block is to keep track of whether we need to make a new block. 
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
     bool made_block = false;
@@ -106,6 +109,22 @@ int main()
                 if (event.key.code == sf::Keyboard::Space) {
                     pressed_space = true;
                     window.setFramerateLimit(800);
+                }
+                if (event.key.code == sf::Keyboard::LShift) {
+                    // if there isn't a held block
+                    if (held_block_num == 9) {
+                        held_block_num = block_num;
+                        made_block = false;
+                    } else {
+                        int temp = block_num;
+                        block_num = held_block_num;
+                        // update the curr_block array
+                        for (int i = 0; i < 4; i++) {
+                            curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
+                            curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
+                        }
+                        held_block_num = temp;
+                    }
                 }
             }
             if (event.type == Event::KeyReleased) {
@@ -165,14 +184,33 @@ int main()
             next_block_mainpt.x = 13;
             next_block_mainpt.y = 3;
             for (int i=0; i < 4; i++) {
-                cout << "coolio" << endl;
-                cout << next_block_num << endl;
                 Sprite next_block;
                 next_block.setTexture(texture);
                 next_block.setTextureRect(sf::IntRect(18 * next_block_num, 0, 18, 18));
                 next_block.setScale(RESIZE, RESIZE);
                 next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE,RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
                 window.draw(next_block);
+            }
+
+            // draw out the holding area
+            sf::RectangleShape hold_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
+            hold_block_area.setPosition(CELL_SIZE * RESIZE, CELL_SIZE * RESIZE * 2);
+            hold_block_area.setFillColor(Color::White);
+            window.draw(hold_block_area);
+
+            // draw out the hold block if there is one. 9 means there is no hold block
+            if (held_block_num != 9) {
+                Point held_block_mainpt;
+                held_block_mainpt.x = 3;
+                held_block_mainpt.y = 4;
+                for (int i=0; i < 4; i++) {
+                    Sprite held_block;
+                    held_block.setTexture(texture);
+                    held_block.setTextureRect(sf::IntRect(18 * held_block_num, 0, 18, 18));
+                    held_block.setScale(RESIZE, RESIZE);
+                    held_block.setPosition(RESIZE * CELL_SIZE * (held_block_mainpt.x + tetromino[held_block_num][i][0]),RESIZE * CELL_SIZE * (held_block_mainpt.y + tetromino[held_block_num][i][1]));
+                    window.draw(held_block);
+                }
             }
 
             // draw out the points display
