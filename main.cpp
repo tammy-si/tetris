@@ -34,19 +34,24 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
 void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
 bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
-void updateField(int field[][COLUMNS]);
+int updateField(int field[][COLUMNS]);
 bool checkGameover(int field[][COLUMNS]);
 void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture);
 
 int main()
 {
     srand(time(NULL));
-    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
+    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE + 12 * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
     // uploading original texture 
     Texture texture;
     texture.loadFromFile("Blocks.png");
+    // uploading font
+    Font font;
+    font.loadFromFile("VCR_OSD_MONO_1.001.ttf");
     // keep track of what block we're on
     int block_num;
+    // keep track of what block is next
+    int next_block_num = rand() % 7;;
     window.setFramerateLimit(60);
     int field[ROWS][COLUMNS];
     // set all the values of the field to 9. 9 means that the spot is empty.
@@ -65,6 +70,11 @@ int main()
     Point starter_point;
     starter_point.x = 4;
     starter_point.y = 1;
+
+    unsigned long score = 0;
+
+    // the block being held. Starts at 9, which represents no block cause there isn't 9 tetromino
+    int held_block_num = 9;
 
     // made block is to keep track of whether we need to make a new block. 
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
@@ -100,6 +110,22 @@ int main()
                     pressed_space = true;
                     window.setFramerateLimit(800);
                 }
+                if (event.key.code == sf::Keyboard::LShift) {
+                    // if there isn't a held block
+                    if (held_block_num == 9) {
+                        held_block_num = block_num;
+                        made_block = false;
+                    } else {
+                        int temp = block_num;
+                        block_num = held_block_num;
+                        // update the curr_block array
+                        for (int i = 0; i < 4; i++) {
+                            curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
+                            curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
+                        }
+                        held_block_num = temp;
+                    }
+                }
             }
             if (event.type == Event::KeyReleased) {
                 if (event.key.code == sf::Keyboard::Down) {
@@ -112,24 +138,24 @@ int main()
             }
         }
         if (!stop_game) {
-            window.display();
-
+            window.clear();
             // draw the grid out
             for (int i = 0; i < 20; i++) {
                 for (int j = 0; j < 10; j++) {
                     sf::RectangleShape block(sf::Vector2f(CELL_SIZE * RESIZE - 1, CELL_SIZE * RESIZE - 1));
                     block.setFillColor(Color::White);
-                    block.setPosition(j * 36, i * 36);
+                    // the 6 * RESIZE * CELL_SIZE is because we have to shift the grid/game 6 grids over to have the left side for the held block
+                    block.setPosition(j * 36 + 6 * CELL_SIZE * RESIZE, i * 36);
                     window.draw(block);
                 }
             }
             // populate curr_block based on random block chosen
             if (!made_block) {
-                // kept track of the prev block we had, so that we don't have two of the same blocks in a row
-                int prev = block_num;
-                while (block_num == prev) {
-                    block_num = rand() % 7;
-                }
+                // replace the current block with the one that's in queue to be next, then find a new next block
+                block_num = next_block_num;
+                do {
+                    next_block_num = rand() % 7;
+                } while (next_block_num == block_num);
                 for (int i = 0; i < 4; i++) {
                     curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
                     curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
@@ -144,9 +170,76 @@ int main()
                 sprite.setTexture(texture);
                 sprite.setTextureRect(sf::IntRect(18 * block_num, 0, 18, 18));
                 sprite.setScale(RESIZE, RESIZE);
-                sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
+                sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE , curr_block[i].y * RESIZE * CELL_SIZE);
                 window.draw(sprite);
             }
+
+            // draw out the next block area and next block
+            sf::RectangleShape next_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
+            next_block_area.setPosition(CELL_SIZE * RESIZE * 11 + 6 * CELL_SIZE * RESIZE, 2 * CELL_SIZE * RESIZE);
+            next_block_area.setFillColor(Color::White);
+            window.draw(next_block_area);
+
+            // draw out the next block
+            Point next_block_mainpt;
+            next_block_mainpt.x = 13;
+            next_block_mainpt.y = 4;
+            for (int i=0; i < 4; i++) {
+                Sprite next_block;
+                next_block.setTexture(texture);
+                next_block.setTextureRect(sf::IntRect(18 * next_block_num, 0, 18, 18));
+                next_block.setScale(RESIZE, RESIZE);
+                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE, RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
+                window.draw(next_block);
+            }
+
+            // draw out the next word
+            Text next_word;
+            next_word.setFont(font);
+            next_word.setString("Next");
+            next_word.setFillColor(sf::Color::White);
+            next_word.setPosition(12 * RESIZE * CELL_SIZE + 6 * RESIZE * CELL_SIZE, RESIZE * CELL_SIZE);
+            next_word.setCharacterSize(30);
+            window.draw(next_word);
+
+            // draw out the holding area
+            sf::RectangleShape hold_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
+            hold_block_area.setPosition(CELL_SIZE * RESIZE, CELL_SIZE * RESIZE * 2);
+            hold_block_area.setFillColor(Color::White);
+            window.draw(hold_block_area);
+
+            // draw out the hold block if there is one. 9 means there is no hold block
+            if (held_block_num != 9) {
+                Point held_block_mainpt;
+                held_block_mainpt.x = 3;
+                held_block_mainpt.y = 4;
+                for (int i=0; i < 4; i++) {
+                    Sprite held_block;
+                    held_block.setTexture(texture);
+                    held_block.setTextureRect(sf::IntRect(18 * held_block_num, 0, 18, 18));
+                    held_block.setScale(RESIZE, RESIZE);
+                    held_block.setPosition(RESIZE * CELL_SIZE * (held_block_mainpt.x + tetromino[held_block_num][i][0]), RESIZE * CELL_SIZE * (held_block_mainpt.y + tetromino[held_block_num][i][1]));
+                    window.draw(held_block);
+                }
+            }
+            // draw out the hold word
+            Text hold_word;
+            hold_word.setFont(font);
+            hold_word.setString("Hold");
+            hold_word.setFillColor(sf::Color::White);
+            hold_word.setPosition(2 * RESIZE * CELL_SIZE, RESIZE * CELL_SIZE);
+            hold_word.setCharacterSize(30);
+            window.draw(hold_word);
+
+            // draw out the points display
+            Text text;
+            text.setFont(font);
+            text.setString("Score: \n" + to_string(score));
+            text.setFillColor(sf::Color::White);
+            text.setPosition(11 * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, 7 * RESIZE * CELL_SIZE);
+            text.setCharacterSize(30);
+            window.draw(text);
+
             // count frame to make the block drop
             if (pressed_space) {
                 frame += 30;
@@ -166,10 +259,27 @@ int main()
                 for (int i = 0; i < 4; i++) {
                         field[curr_block[i].y][curr_block[i].x] = block_num;
                 }
-                updateField(field);
+                int lines_cleared = updateField(field);
+                switch (lines_cleared) {
+                    case 0:
+                        break;
+                    case 1:
+                        score += 40;
+                        break;
+                    case 2:
+                        score += 100;
+                        break;
+                    case 3:
+                        score += 300;
+                        break;
+                    case 4:
+                        score += 1200;
+                        break;
+                }
                 pressed_space = false;
             }
             drawField(field, window, texture);
+            window.display();
         }
         // check to see if it's game over by checking if the field has something in its top row
         if (checkGameover(field)) {
@@ -257,9 +367,9 @@ void rotateBlock(Point curr_block[]) {
 }
 
 // update field
-// delete full rows and move the blocks down
-void updateField(int field[][COLUMNS]) {
-
+// delete full rows and move the blocks down also keep track of the amount of rows deleted and return it so we can add points
+int updateField(int field[][COLUMNS]) {
+    int rows_cleared {0};
     // an array to keep track of whether the row has been cleared. order is top down the same as the field
     // 1 is that the row is cleared (1 is true). 0 is that the row is not cleared
     int cleared[20];
@@ -280,6 +390,7 @@ void updateField(int field[][COLUMNS]) {
                 field[row][b] = 9;
             }
             cleared[row] = 1;
+            rows_cleared++;
         }
     }
 
@@ -307,6 +418,7 @@ void updateField(int field[][COLUMNS]) {
             }
         }
     }
+    return rows_cleared;
 }
 
 // check for gameover
@@ -332,7 +444,7 @@ void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture) {
             block.setTexture(texture);
             block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
             block.setScale(RESIZE, RESIZE);
-            block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
+            block.setPosition(column * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, row * RESIZE * CELL_SIZE);
             window.draw(block);          
         }
     }
