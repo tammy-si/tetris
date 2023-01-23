@@ -45,6 +45,9 @@ int main()
     // uploading original texture 
     Texture texture;
     texture.loadFromFile("Blocks.png");
+    // uploading font
+    Font font;
+    font.loadFromFile("VCR_OSD_MONO_1.001.ttf");
     // keep track of what block we're on
     int block_num;
     // keep track of what block is next
@@ -67,6 +70,8 @@ int main()
     Point starter_point;
     starter_point.x = 4;
     starter_point.y = 1;
+
+    unsigned long score = 0;
 
     // made block is to keep track of whether we need to make a new block. 
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
@@ -171,6 +176,14 @@ int main()
                 window.draw(next_block);
             }
 
+            // draw out the points display
+            Text text;
+            text.setFont(font);
+            text.setString("Score: \n" + to_string(score));
+            text.setFillColor(sf::Color::White);
+            text.setPosition(11 * RESIZE * CELL_SIZE, 6 * RESIZE * CELL_SIZE);
+            text.setCharacterSize(30);
+            window.draw(text);
 
             // count frame to make the block drop
             if (pressed_space) {
