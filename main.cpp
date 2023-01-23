@@ -144,6 +144,7 @@ int main()
                 for (int j = 0; j < 10; j++) {
                     sf::RectangleShape block(sf::Vector2f(CELL_SIZE * RESIZE - 1, CELL_SIZE * RESIZE - 1));
                     block.setFillColor(Color::White);
+                    // the 6 * RESIZE * CELL_SIZE is because we have to shift the grid/game 6 grids over to have the left side for the held block
                     block.setPosition(j * 36 + 6 * CELL_SIZE * RESIZE, i * 36);
                     window.draw(block);
                 }
@@ -191,7 +192,16 @@ int main()
                 next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE, RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
                 window.draw(next_block);
             }
-            
+
+            // draw out the next word
+            Text next_word;
+            next_word.setFont(font);
+            next_word.setString("Next");
+            next_word.setFillColor(sf::Color::White);
+            next_word.setPosition(12 * RESIZE * CELL_SIZE + 6 * RESIZE * CELL_SIZE, RESIZE * CELL_SIZE);
+            next_word.setCharacterSize(30);
+            window.draw(next_word);
+
             // draw out the holding area
             sf::RectangleShape hold_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
             hold_block_area.setPosition(CELL_SIZE * RESIZE, CELL_SIZE * RESIZE * 2);
