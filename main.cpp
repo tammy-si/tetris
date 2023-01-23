@@ -41,12 +41,14 @@ void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture);
 int main()
 {
     srand(time(NULL));
-    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
+    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE + 6 * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
     // uploading original texture 
     Texture texture;
     texture.loadFromFile("Blocks.png");
     // keep track of what block we're on
     int block_num;
+    // keep track of what block is next
+    int next_block_num = rand() % 7;;
     window.setFramerateLimit(60);
     int field[ROWS][COLUMNS];
     // set all the values of the field to 9. 9 means that the spot is empty.
@@ -125,11 +127,11 @@ int main()
             }
             // populate curr_block based on random block chosen
             if (!made_block) {
-                // kept track of the prev block we had, so that we don't have two of the same blocks in a row
-                int prev = block_num;
-                while (block_num == prev) {
-                    block_num = rand() % 7;
-                }
+                // replace the current block with the one that's in queue to be next, then find a new next block
+                block_num = next_block_num;
+                do {
+                    next_block_num = rand() % 7;
+                } while (next_block_num == block_num);
                 for (int i = 0; i < 4; i++) {
                     curr_block[i].x = starter_point.x + tetromino[block_num][i][0];
                     curr_block[i].y = starter_point.y + tetromino[block_num][i][1];
@@ -147,6 +149,29 @@ int main()
                 sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
                 window.draw(sprite);
             }
+
+            // draw out the next block area and next block
+            sf::RectangleShape next_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
+            next_block_area.setPosition(CELL_SIZE * RESIZE * 11, CELL_SIZE * RESIZE);
+            next_block_area.setFillColor(Color::White);
+            window.draw(next_block_area);
+
+            // draw out the next block
+            Point next_block_mainpt;
+            next_block_mainpt.x = 13;
+            next_block_mainpt.y = 3;
+            for (int i=0; i < 4; i++) {
+                cout << "coolio" << endl;
+                cout << next_block_num << endl;
+                Sprite next_block;
+                next_block.setTexture(texture);
+                next_block.setTextureRect(sf::IntRect(18 * next_block_num, 0, 18, 18));
+                next_block.setScale(RESIZE, RESIZE);
+                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0]),RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
+                window.draw(next_block);
+            }
+
+
             // count frame to make the block drop
             if (pressed_space) {
                 frame += 30;
