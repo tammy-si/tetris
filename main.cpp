@@ -34,7 +34,7 @@ bool checkBounds(Point curr_block[], int x_change, int y_change, bool &has_colli
 void moveBlock(Point curr_block[], int x_change, int y_change);
 void rotateBlock(Point curr_block[]);
 bool checkCanRotate(Point curr_block[], int field[][COLUMNS]);
-void updateField(int field[][COLUMNS]);
+int updateField(int field[][COLUMNS]);
 bool checkGameover(int field[][COLUMNS]);
 void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture);
 
@@ -119,8 +119,7 @@ int main()
             }
         }
         if (!stop_game) {
-            window.display();
-
+            window.clear();
             // draw the grid out
             for (int i = 0; i < 20; i++) {
                 for (int j = 0; j < 10; j++) {
@@ -204,10 +203,12 @@ int main()
                 for (int i = 0; i < 4; i++) {
                         field[curr_block[i].y][curr_block[i].x] = block_num;
                 }
-                updateField(field);
+                int to_add = updateField(field);
+                score += to_add * 100;
                 pressed_space = false;
             }
             drawField(field, window, texture);
+            window.display();
         }
         // check to see if it's game over by checking if the field has something in its top row
         if (checkGameover(field)) {
@@ -295,9 +296,9 @@ void rotateBlock(Point curr_block[]) {
 }
 
 // update field
-// delete full rows and move the blocks down
-void updateField(int field[][COLUMNS]) {
-
+// delete full rows and move the blocks down also keep track of the amount of rows deleted and return it so we can add points
+int updateField(int field[][COLUMNS]) {
+    int rows_cleared {0};
     // an array to keep track of whether the row has been cleared. order is top down the same as the field
     // 1 is that the row is cleared (1 is true). 0 is that the row is not cleared
     int cleared[20];
@@ -318,6 +319,7 @@ void updateField(int field[][COLUMNS]) {
                 field[row][b] = 9;
             }
             cleared[row] = 1;
+            rows_cleared++;
         }
     }
 
@@ -345,6 +347,7 @@ void updateField(int field[][COLUMNS]) {
             }
         }
     }
+    return rows_cleared;
 }
 
 // check for gameover
