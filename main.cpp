@@ -203,8 +203,23 @@ int main()
                 for (int i = 0; i < 4; i++) {
                         field[curr_block[i].y][curr_block[i].x] = block_num;
                 }
-                int to_add = updateField(field);
-                score += to_add * 100;
+                int lines_cleared = updateField(field);
+                switch (lines_cleared) {
+                    case 0:
+                        break;
+                    case 1:
+                        score += 40;
+                        break;
+                    case 2:
+                        score += 100;
+                        break;
+                    case 3:
+                        score += 300;
+                        break;
+                    case 4:
+                        score += 1200;
+                        break;
+                }
                 pressed_space = false;
             }
             drawField(field, window, texture);
