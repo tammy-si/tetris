@@ -175,23 +175,23 @@ int main()
 
             // draw out the next block area and next block
             sf::RectangleShape next_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
-            next_block_area.setPosition(CELL_SIZE * RESIZE * 11 + 6 * CELL_SIZE * RESIZE, CELL_SIZE * RESIZE);
+            next_block_area.setPosition(CELL_SIZE * RESIZE * 11 + 6 * CELL_SIZE * RESIZE, 2 * CELL_SIZE * RESIZE);
             next_block_area.setFillColor(Color::White);
             window.draw(next_block_area);
 
             // draw out the next block
             Point next_block_mainpt;
             next_block_mainpt.x = 13;
-            next_block_mainpt.y = 3;
+            next_block_mainpt.y = 4;
             for (int i=0; i < 4; i++) {
                 Sprite next_block;
                 next_block.setTexture(texture);
                 next_block.setTextureRect(sf::IntRect(18 * next_block_num, 0, 18, 18));
                 next_block.setScale(RESIZE, RESIZE);
-                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE,RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
+                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE, RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
                 window.draw(next_block);
             }
-
+            
             // draw out the holding area
             sf::RectangleShape hold_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
             hold_block_area.setPosition(CELL_SIZE * RESIZE, CELL_SIZE * RESIZE * 2);
@@ -208,17 +208,25 @@ int main()
                     held_block.setTexture(texture);
                     held_block.setTextureRect(sf::IntRect(18 * held_block_num, 0, 18, 18));
                     held_block.setScale(RESIZE, RESIZE);
-                    held_block.setPosition(RESIZE * CELL_SIZE * (held_block_mainpt.x + tetromino[held_block_num][i][0]),RESIZE * CELL_SIZE * (held_block_mainpt.y + tetromino[held_block_num][i][1]));
+                    held_block.setPosition(RESIZE * CELL_SIZE * (held_block_mainpt.x + tetromino[held_block_num][i][0]), RESIZE * CELL_SIZE * (held_block_mainpt.y + tetromino[held_block_num][i][1]));
                     window.draw(held_block);
                 }
             }
+            // draw out the hold word
+            Text hold_word;
+            hold_word.setFont(font);
+            hold_word.setString("Hold");
+            hold_word.setFillColor(sf::Color::White);
+            hold_word.setPosition(2 * RESIZE * CELL_SIZE, RESIZE * CELL_SIZE);
+            hold_word.setCharacterSize(30);
+            window.draw(hold_word);
 
             // draw out the points display
             Text text;
             text.setFont(font);
             text.setString("Score: \n" + to_string(score));
             text.setFillColor(sf::Color::White);
-            text.setPosition(11 * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, 6 * RESIZE * CELL_SIZE);
+            text.setPosition(11 * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, 7 * RESIZE * CELL_SIZE);
             text.setCharacterSize(30);
             window.draw(text);
 
