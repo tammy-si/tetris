@@ -41,7 +41,7 @@ void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture);
 int main()
 {
     srand(time(NULL));
-    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE + 6 * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
+    RenderWindow window(VideoMode(COLUMNS * CELL_SIZE * RESIZE + 12 * CELL_SIZE * RESIZE, ROWS * CELL_SIZE * RESIZE), "Tetris!");
     // uploading original texture 
     Texture texture;
     texture.loadFromFile("Blocks.png");
@@ -125,7 +125,7 @@ int main()
                 for (int j = 0; j < 10; j++) {
                     sf::RectangleShape block(sf::Vector2f(CELL_SIZE * RESIZE - 1, CELL_SIZE * RESIZE - 1));
                     block.setFillColor(Color::White);
-                    block.setPosition(j * 36, i * 36);
+                    block.setPosition(j * 36 + 6 * CELL_SIZE * RESIZE, i * 36);
                     window.draw(block);
                 }
             }
@@ -150,13 +150,13 @@ int main()
                 sprite.setTexture(texture);
                 sprite.setTextureRect(sf::IntRect(18 * block_num, 0, 18, 18));
                 sprite.setScale(RESIZE, RESIZE);
-                sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE, curr_block[i].y * RESIZE * CELL_SIZE);
+                sprite.setPosition(curr_block[i].x * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE , curr_block[i].y * RESIZE * CELL_SIZE);
                 window.draw(sprite);
             }
 
             // draw out the next block area and next block
             sf::RectangleShape next_block_area(sf::Vector2f(CELL_SIZE * RESIZE * 4, CELL_SIZE * RESIZE * 4));
-            next_block_area.setPosition(CELL_SIZE * RESIZE * 11, CELL_SIZE * RESIZE);
+            next_block_area.setPosition(CELL_SIZE * RESIZE * 11 + 6 * CELL_SIZE * RESIZE, CELL_SIZE * RESIZE);
             next_block_area.setFillColor(Color::White);
             window.draw(next_block_area);
 
@@ -171,7 +171,7 @@ int main()
                 next_block.setTexture(texture);
                 next_block.setTextureRect(sf::IntRect(18 * next_block_num, 0, 18, 18));
                 next_block.setScale(RESIZE, RESIZE);
-                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0]),RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
+                next_block.setPosition(RESIZE * CELL_SIZE * (next_block_mainpt.x + tetromino[next_block_num][i][0])  + 6 * CELL_SIZE * RESIZE,RESIZE * CELL_SIZE * (next_block_mainpt.y + tetromino[next_block_num][i][1]));
                 window.draw(next_block);
             }
 
@@ -180,7 +180,7 @@ int main()
             text.setFont(font);
             text.setString("Score: \n" + to_string(score));
             text.setFillColor(sf::Color::White);
-            text.setPosition(11 * RESIZE * CELL_SIZE, 6 * RESIZE * CELL_SIZE);
+            text.setPosition(11 * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, 6 * RESIZE * CELL_SIZE);
             text.setCharacterSize(30);
             window.draw(text);
 
@@ -388,7 +388,7 @@ void drawField(int field[][COLUMNS], RenderWindow &window, Texture &texture) {
             block.setTexture(texture);
             block.setTextureRect(sf::IntRect(18 * field[row][column], 0, 18, 18));
             block.setScale(RESIZE, RESIZE);
-            block.setPosition(column * RESIZE * CELL_SIZE, row * RESIZE * CELL_SIZE);
+            block.setPosition(column * RESIZE * CELL_SIZE  + 6 * CELL_SIZE * RESIZE, row * RESIZE * CELL_SIZE);
             window.draw(block);          
         }
     }
