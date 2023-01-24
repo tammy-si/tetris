@@ -3,10 +3,12 @@
 #include <random>
 #include <time.h>
 #include <algorithm> 
+#include <SFML/Audio/Music.hpp>
+
 
 using namespace sf;
 using namespace std;
-// clang++ main.cpp -I/opt/homebrew/Cellar/sfml/2.5.1_2/include/ -L/opt/homebrew/Cellar/sfml/2.5.1_2/lib  -lsfml-graphics -lsfml-window -lsfml-system -std=c++20
+// clang++ main.cpp -I/opt/homebrew/Cellar/sfml/2.5.1_2/include/ -L/opt/homebrew/Cellar/sfml/2.5.1_2/lib  -lsfml-graphics -lsfml-window -lsfml-audio -lsfml-system -std=c++20
 
 const unsigned int CELL_SIZE = 18;
 const unsigned int COLUMNS = 10;
@@ -78,6 +80,13 @@ int main()
 
     // the block being held. Starts at 9, which represents no block cause there isn't 9 tetromino
     int held_block_num = 9;
+
+    // tetris background music
+    sf::Music music;
+    music.openFromFile("Tetris.ogg");
+    music.setLoop(true);
+    music.setVolume(10.0);
+    music.play();
 
     // made block is to keep track of whether we need to make a new block. 
     // has_collided keeps track of whether or not the current block has collided with the bottom or field
