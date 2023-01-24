@@ -72,6 +72,9 @@ int main()
     starter_point.y = 1;
 
     unsigned long score = 0;
+    // total lines cleared
+    int total_lines_cleared = 0;
+    int level = 0;
 
     // the block being held. Starts at 9, which represents no block cause there isn't 9 tetromino
     int held_block_num = 9;
@@ -129,11 +132,11 @@ int main()
             }
             if (event.type == Event::KeyReleased) {
                 if (event.key.code == sf::Keyboard::Down) {
-                    window.setFramerateLimit(60);
+                    window.setFramerateLimit(60 + 5 * level);
                 }
                 if (event.key.code == sf::Keyboard::Space) {
                     pressed_space = false;
-                    window.setFramerateLimit(60);
+                    window.setFramerateLimit(60 + 5 * level);
                 }
             }
         }
@@ -276,6 +279,9 @@ int main()
                         score += 1200;
                         break;
                 }
+                total_lines_cleared += lines_cleared;
+                level = total_lines_cleared / 10;
+                window.setFramerateLimit(60 + 5 * level);
                 pressed_space = false;
             }
             drawField(field, window, texture);
