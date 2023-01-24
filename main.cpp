@@ -110,7 +110,7 @@ int main()
                     pressed_space = true;
                     window.setFramerateLimit(800);
                 }
-                if (event.key.code == sf::Keyboard::LShift) {
+                if (event.key.code == sf::Keyboard::C || event.key.code == sf::Keyboard::LShift) {
                     // if there isn't a held block
                     if (held_block_num == 9) {
                         held_block_num = block_num;
@@ -285,6 +285,13 @@ int main()
         if (checkGameover(field)) {
             stop_game = true;
             drawField(field, window, texture);
+            Text end_text;
+            end_text.setFont(font);
+            end_text.setFillColor(Color::Red);
+            end_text.setPosition(6 * CELL_SIZE * RESIZE, 9 * CELL_SIZE * RESIZE);
+            end_text.setCharacterSize(50);
+            end_text.setString("Gameover \nFinal score: " + to_string(score));
+            window.draw(end_text);
             window.display();
         }
     }
